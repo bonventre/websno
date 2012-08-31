@@ -1,6 +1,8 @@
 var CrateScreamersView = Backbone.View.extend({
   tagName: 'td',
 
+  className: 'screamers-view',
+
   template: _.template($('#screamers-view').html()),
 
   events: {
@@ -20,6 +22,8 @@ var CrateScreamersView = Backbone.View.extend({
 
 var CrateScreamersListView = Backbone.View.extend({
   tagName: 'table',
+
+  className: 'screamerslist-view',
 
   template: _.template($('#screamerslist-view').html()),
 
@@ -47,6 +51,8 @@ var CrateScreamersListView = Backbone.View.extend({
 var CmosRatesView = Backbone.View.extend({
   tagName: 'tr',
 
+  className: 'cmosrates-view',
+
   template: _.template($('#cmosrates-view').html()),
 
   events: {
@@ -66,6 +72,8 @@ var CmosRatesView = Backbone.View.extend({
 
 var CmosRatesListView = Backbone.View.extend({
   tagName: 'table',
+
+  className: 'cmosrateslist-view',
 
   template: _.template($('#cmosrateslist-view').html()),
 

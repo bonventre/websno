@@ -1,3 +1,32 @@
 .timeplot{
+  float: left;
+  width: 400px;
   height: 400px;
+  padding: 20px;
+  margin: 20px;
+}
+
+.screamers-view {
+  border: solid 4px black;
+  width: 10%;
+}
+
+.screamerslist-view {
+  float: left;
+  width: 400px;
+  height: 100px;
+}
+
+.cmosrates-view {
+}
+
+.cmosrateslist-view {
+  float: right;
+  width: 750px;
+  border: solid 2px black;
+  table-layout: fixed;
+}
+
+#content {
+  width: 1280px;
 }
