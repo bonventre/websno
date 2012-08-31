@@ -7,11 +7,12 @@ from socketio import socketio_manage
 from socketio.server import SocketIOServer
 
 from snostream.apps.websnoed import websnoed
-from snostream.apps.cmostest import cmos
+from snostream.apps.cmostest import cmostest
+from snostream.apps.cmos import cmos
 
 base_path = os.path.abspath(os.path.dirname(__file__))
 
-app_paths = ['websnoed', 'cmos']
+app_paths = ['websnoed', 'cmostest', 'cmos']
 
 class Application(object):
     def __init__(self):
@@ -58,7 +59,8 @@ class Application(object):
         if path.startswith("socket.io"):
             routes = {
                 '/websnoed': websnoed.EventViewerNamespace,
-                '/cmos': cmos.CMOSRatesNamespace
+                '/cmostest': cmostest.CMOSRatesNamespace,
+                '/cmos': cmos.ScreamersNamespace
             }
             socketio_manage(environ, routes, self.request)
         else:

@@ -1,0 +1,25 @@
+<html>
+<head>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <script type="text/javascript" src="/static/js/jquery-1.7.1.min.js"></script>
+  <script type="text/javascript" src="/static/js/socket.io.js"></script>
+  <script type="text/javascript" src="/static/js/flot/jquery.flot.min.js"></script>
+  <script type="text/javascript" src="/static/js/underscore.js"></script>
+  <script type="text/javascript" src="/static/js/backbone.js"></script>
+  <script type="text/javascript" src="/static/js/backbone.iosync.js"></script>
+  <script type="text/javascript" src="/static/js/backbone.iobind.js"></script>
+</head>
+<body>
+  <div id="content">
+  </div>
+  <script type="text/template" id="screamers-view">
+    #<%= id %><br><%= screamers %>
+  </script>
+  <script type="text/template" id="screamerslist-view">
+    <tr></tr><tr></tr>
+  </script>
+  <script type="text/javascript" src="js/models.js"></script>
+  <script type="text/javascript" src="js/views.js"></script>
+  <script type="text/javascript" src="js/main.js"></script>
+</body>
+</html>

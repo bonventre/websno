@@ -45,6 +45,14 @@ class MemoryStore(DataStore):
 
         return l
 
+    def get_latest(self,key,default=None):
+        l = self._store.get(key,[])
+        if len(l) > 0:
+            return l[-1]
+        else:
+            return default
+        
+
 
 class CouchDBStore(DataStore):
     '''Store queues in a CouchDB database'''
@@ -90,6 +98,13 @@ class CouchDBStore(DataStore):
         l = [(r.key[1], r.value) for r in self._db.view('foo/asdf', **kwargs)]
 
         return l
+
+    def get_latest(self,key,default=None):
+        kwargs = {'startkey': [key], 'endkey': [key,{}], 'descending': True}
+        r = self._db.view('foo/asdf',**kwargs)
+        l = [r[0].key[1],r.value]
+        return l[-1]
+
 
 
 class CouchBaseStore(DataStore):

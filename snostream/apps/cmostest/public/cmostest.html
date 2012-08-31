@@ -9,16 +9,16 @@
         margin: 10px;
       }
     </style>
-    <link href="static/css/style.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
     <script type="text/javascript" src="/static/js/jquery-1.7.1.min.js"></script>
-    <script type="text/javascript" src="static/socket.io.js"></script>
+    <script type="text/javascript" src="/static/js/socket.io.js"></script>
     <script type="text/javascript" src="/static/js/flot/jquery.flot.min.js"></script>
 
     <script>    
       WEB_SOCKET_SWF_LOCATION = "/static/WebSocketMain.swf";
       WEB_SOCKET_DEBUG = true;
 
-      var socket = io.connect('/cmos');
+      var socket = io.connect('/cmostest);
       var plot;
       var data = [];
 
