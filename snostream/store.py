@@ -7,7 +7,8 @@ to the user.
 import json
 import uuid
 
-from snostream.apps.cmostest.cmos import CMOSRatesNamespace
+from snostream.apps.cmostest.cmostest import CMOSRatesNamespace
+from snostream.apps.cmos.cmos import ScreamersNamespace
 
 class DataStore:
     '''Base class for data storage interfaces'''
@@ -28,6 +29,7 @@ class MemoryStore(DataStore):
             self._store.setdefault(o['key'], []).append([o['timestamp'], o['value']])
 
         CMOSRatesNamespace.update_trigger()
+        ScreamersNamespace.update_trigger()
 
     def get(self, key, interval=None):
         '''Get a list of (timestamp, value) tuples for the requested key over
@@ -45,12 +47,17 @@ class MemoryStore(DataStore):
 
         return l
 
-    def get_latest(self,key,default=None):
+    def get_latest(self,key,lasttime=None,default=None):
         l = self._store.get(key,[])
+        print 'len is ',len(l)
         if len(l) > 0:
-            return l[-1]
-        else:
-            return default
+            if lasttime:
+                print lasttime
+                if l[-1][0] > lasttime:
+                    return l[-1]
+            else:
+                return l[-1]
+        return default
         
 
 
@@ -81,6 +88,7 @@ class CouchDBStore(DataStore):
         '''Store a list of key/value/timestamp dicts'''
         self._db.update(l)
         CMOSRatesNamespace.update_trigger()
+        ScreamersNamespace.update_trigger()
 
     def get(self, key, interval=None):
         '''Get a list of (timestamp, value) tuples for the requested key over

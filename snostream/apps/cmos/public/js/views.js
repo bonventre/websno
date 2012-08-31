@@ -28,7 +28,7 @@ var CrateScreamersListView = Backbone.View.extend({
     $(this.el).html(this.template());
     var counter = 0;
     _.each(this.model.models, function(crate) {
-      var temp = new CrateScreamerView({model: crate});
+      var temp = new CrateScreamersView({model: crate});
       if (counter < 10){
         $(this.el).children(":first").append(temp.render().el);
       }else{

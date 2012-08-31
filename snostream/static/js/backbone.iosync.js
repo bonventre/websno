@@ -52,7 +52,7 @@ Backbone.sync = function (method, model, options) {
     , namespace = (cmd[0] !== '') ? cmd[0] : cmd[1]; // if leading slash, ignore
 
   var params = _.extend({
-    req: namespace + ':' + method
+    req: namespace + method
   }, options);
 
   if ( !params.data && model ) {
@@ -62,7 +62,7 @@ Backbone.sync = function (method, model, options) {
   // If your socket.io connection exists on a different var, change here:
   var io = model.socket || window.socket || Backbone.socket;
 
-  io.emit(namespace + ':' + method, params.data, function (err, data) {
+  io.emit(namespace + method, params.data, function (err, data) {
     if (err) {
       options.error(err);
     } else {
