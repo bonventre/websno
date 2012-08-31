@@ -60,7 +60,8 @@ class Application(object):
             routes = {
                 '/websnoed': websnoed.EventViewerNamespace,
                 '/cmostest': cmostest.CMOSRatesNamespace,
-                '/cmos': cmos.ScreamersNamespace
+                '/cmosrates': cmos.CMOSRatesNamespace,
+                '/screamers': cmos.ScreamersNamespace
             }
             socketio_manage(environ, routes, self.request)
         else:

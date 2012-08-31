@@ -18,6 +18,19 @@
   <script type="text/template" id="screamerslist-view">
     <tr></tr><tr></tr>
   </script>
+  <script type="text/template" id="cmosrates-view">
+    <td><%= rate %></td>
+  </script>
+  <script type="text/template" id="cmosrateslist-view">
+    <tr>
+      <% for (var i=0;i<16;i++) { %>
+        <td>
+          <table id='slot-<%= i %>' style='border: 2px solid black;'>
+          </table>
+        </td>
+        <% } %>
+    </tr>
+  </script>
   <script type="text/javascript" src="js/models.js"></script>
   <script type="text/javascript" src="js/views.js"></script>
   <script type="text/javascript" src="js/main.js"></script>

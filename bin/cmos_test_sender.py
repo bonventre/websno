@@ -14,7 +14,7 @@ while True:
         'channels': []
     }
     
-    for i in range(32):
+    for i in range(512):
         d['channels'].append({
             'id': i,
             'rate': max(0, random.normalvariate(1000, 1000))

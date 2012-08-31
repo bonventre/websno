@@ -7,8 +7,9 @@ to the user.
 import json
 import uuid
 
-from snostream.apps.cmostest.cmostest import CMOSRatesNamespace
+from snostream.apps.cmostest.cmostest import CMOSRatesNamespace as CMOSRatesTestNamespace
 from snostream.apps.cmos.cmos import ScreamersNamespace
+from snostream.apps.cmos.cmos import CMOSRatesNamespace
 
 class DataStore:
     '''Base class for data storage interfaces'''
@@ -29,6 +30,7 @@ class MemoryStore(DataStore):
             self._store.setdefault(o['key'], []).append([o['timestamp'], o['value']])
 
         CMOSRatesNamespace.update_trigger()
+        CMOSRatesTestNamespace.update_trigger()
         ScreamersNamespace.update_trigger()
 
     def get(self, key, interval=None):
@@ -88,6 +90,7 @@ class CouchDBStore(DataStore):
         '''Store a list of key/value/timestamp dicts'''
         self._db.update(l)
         CMOSRatesNamespace.update_trigger()
+        CMOSRatesTestNamespace.update_trigger()
         ScreamersNamespace.update_trigger()
 
     def get(self, key, interval=None):
