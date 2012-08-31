@@ -41,6 +41,7 @@ var CmosRatesCollection = Backbone.Collection.extend({
 
   initialize: function(){
     this.socket = sockets['cmosrates'];
+    this.ioBindChained('update',this);
   }
 });
 

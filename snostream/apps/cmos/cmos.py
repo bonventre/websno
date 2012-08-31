@@ -31,7 +31,6 @@ class ScreamersNamespace(BaseNamespace):
                 update = snostream.data_store.get_latest('cmos_rates_%i' % channel,s.last_update)
                 if update is not None:
                     address = 'screamers/%i:update' % channel
-                    print address
                     s.emit(address,{'id':channel,'screamers':int(round(update[1],0))})
             s.last_update = time.time()
 
@@ -58,13 +57,12 @@ class CMOSRatesNamespace(BaseNamespace):
     def update_trigger(self):
         print 'update trigger'
         for s in CMOSRatesNamespace._registry.values():
-            l = []
-            for channel in range(0,512):
-                update = snostream.data_store.get_latest('cmos_rates_%i' % channel,s.last_update)
-                if update is not None:
-                    address = 'cmosrates/%i:update' % channel
-                    print address
-                    s.emit(address,{'id':channel,'rate':int(round(update[1],0))})
-            s.last_update = time.time()
+          data = {'update': []}
+          for channel in range(0,512):
+              update = snostream.data_store.get_latest('cmos_rates_%i' % channel,s.last_update)
+              if update is not None:
+                  data['update'].append({'id':channel,'rate':int(round(update[1],0))})
+          s.emit('cmosrates:update',data);
+          s.last_update = time.time()
 
 

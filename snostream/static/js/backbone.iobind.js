@@ -227,6 +227,49 @@ Backbone.Collection.prototype.ioBind = function (eventName, io, callback, contex
   return this;
 };
 
+
+/**
+ * # ioBind
+ *
+ * Binds an entire collection of models so many can be updated in one packet.
+ * It expects the server to emit a "model:method" event, and the data should
+ * be {'update': [{id: 1, data: <>},{id: 2, data: <>},...]}
+ * Each model whos id is in the list will have its 'method' event fired and so
+ * if the model is ioBinded to 'method' it will update them all.
+ *
+ */
+
+Backbone.Collection.prototype.ioBindChained = function (eventName, io, context) {
+  var ioEvents = this._ioEvents || (this._ioEvents = {})
+    , globalName = this.url + ':' + eventName
+    , self = this;
+  if ('undefined' == typeof context) {
+    context = io;
+    io = this.socket || window.socket || Backbone.socket;
+  }
+  var event = {
+    name: eventName,
+    global: globalName,
+    cbGlobal: function (data) {
+      for (var i=0;i<data.update.length;i++){
+        _.each(self.models,function(model){
+          if (data.update[i].id == model.id){
+            model.trigger(eventName,data.update[i]);
+          }
+        },this);
+      }
+    }
+  };
+  io.on(event.global, event.cbGlobal);
+  if (!ioEvents[event.name]) {
+    ioEvents[event.name] = [event];
+  } else {
+    ioEvents[event.name].push(event);
+  }
+  return this;
+};
+ 
+
 /**
  * # ioUnbind
  *
