@@ -95,3 +95,28 @@ var CmosRatesListView = Backbone.View.extend({
     this.model.socket.disconnect();
   }
 });
+
+var CmosRateTimesView = Backbone.View.extend({
+  tagName: 'div',
+
+  className: 'timeplot',
+
+  initialize: function() {
+    _.bindAll(this,'render','plot','onclose');
+    this.model.on('change',this.plot);
+  },
+
+  render: function() {
+    return this;
+  },
+
+  plot: function() {
+    this.plot = $.plot($(this.el),[this.model.data],{series: {shadowSize: 0}});
+    return this;
+  },
+
+  onclose: function() {
+    this.model.ioUnbindAll(this.model.socket);
+    this.model.socket.disconnect();
+  }
+});

@@ -8,8 +8,7 @@ import json
 import uuid
 
 from snostream.apps.cmostest.cmostest import CMOSRatesNamespace as CMOSRatesTestNamespace
-from snostream.apps.cmos.cmos import ScreamersNamespace
-from snostream.apps.cmos.cmos import CMOSRatesNamespace
+from snostream.apps.cmos.cmos import ScreamersNamespace, CMOSRatesNamespace, ChannelRatesNamespace
 
 class DataStore:
     '''Base class for data storage interfaces'''
@@ -30,6 +29,7 @@ class MemoryStore(DataStore):
             self._store.setdefault(o['key'], []).append([o['timestamp'], o['value']])
 
         CMOSRatesNamespace.update_trigger()
+        ChannelRatesNamespace.update_trigger()
         CMOSRatesTestNamespace.update_trigger()
         ScreamersNamespace.update_trigger()
 
@@ -51,10 +51,8 @@ class MemoryStore(DataStore):
 
     def get_latest(self,key,lasttime=None,default=None):
         l = self._store.get(key,[])
-        print 'len is ',len(l)
         if len(l) > 0:
             if lasttime:
-                print lasttime
                 if l[-1][0] > lasttime:
                     return l[-1]
             else:
@@ -90,6 +88,7 @@ class CouchDBStore(DataStore):
         '''Store a list of key/value/timestamp dicts'''
         self._db.update(l)
         CMOSRatesNamespace.update_trigger()
+        ChannelRatesNamespace.update_trigger()
         CMOSRatesTestNamespace.update_trigger()
         ScreamersNamespace.update_trigger()
 

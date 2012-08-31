@@ -61,6 +61,7 @@ class Application(object):
                 '/websnoed': websnoed.EventViewerNamespace,
                 '/cmostest': cmostest.CMOSRatesNamespace,
                 '/cmosrates': cmos.CMOSRatesNamespace,
+                '/channelrates': cmos.ChannelRatesNamespace,
                 '/screamers': cmos.ScreamersNamespace
             }
             socketio_manage(environ, routes, self.request)
