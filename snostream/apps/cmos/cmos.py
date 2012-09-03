@@ -10,28 +10,47 @@ class ScreamersNamespace(BaseNamespace):
     def initialize(self, subscriptions=[]):
         print 'connection', id(self)
         ScreamersNamespace._registry[id(self)] = self
-        self.last_update = time.time()
+        self.last_screamers = []
+        self.avg = []
+        self.avg_no_screamers = []
+        self.screamer_thresh = 800
+        for crate in range(19):
+          self.last_screamers.append(0)
+          self.avg.append(0)
+          self.avg_no_screamers.append(0)
 
     def on_screamersread(self, packet):
         print 'initializing screamers'
         if 'ack' in packet:
-            print packet['ack']
-            print packet['id']
-            list = []
-            for i in range(0,19):
-                list.append({'id': i, 'screamers': 0})
-        return [None,list]
+            l = []
+            for i in range(19):
+              l.append({'id': i, 'screamers': 0, 'avg': 0, 'avgno': 0})
+        return [None,l]
 
     @classmethod
     def update_trigger(self):
         for s in ScreamersNamespace._registry.values():
             l = []
-            for channel in range(0,19):
-                update = snostream.data_store.get_latest('cmos_rates_%i' % channel,s.last_update)
-                if update is not None:
-                    address = 'screamers/%i:update' % channel
-                    s.emit(address,{'id':channel,'screamers':int(round(update[1],0))})
-            s.last_update = time.time()
+            for crate in range(19):
+                screamers = 0
+                avg = 0
+                avgno = 0
+                for channel in range(512):
+                    update = snostream.data_store.get_latest('cmos_rates_%i' % (channel+512*crate))
+                    avg += update[1]
+                    if update[1] > s.screamer_thresh:
+                        screamers+=1
+                    else:
+                        avgno += update[1]
+                avg = int(avg/512)
+                avgno = int(avgno/(512-screamers))
+
+                if screamers != s.last_screamers[crate] or avg != s.avg[crate] or avgno != s.avg_no_screamers[crate]:
+                    s.last_screamers[crate] = screamers
+                    s.avg[crate] = avg
+                    s.avg_no_screamers[crate] = avgno
+                    address = 'screamers/%i:update' % crate
+                    s.emit(address,{'id':channel,'screamers':screamers, 'avg':avg, 'avgno':avgno})
 
 
 class CMOSRatesNamespace(BaseNamespace):
@@ -45,18 +64,16 @@ class CMOSRatesNamespace(BaseNamespace):
     def on_cmosratesread(self, packet):
         print 'initializing cmosrates'
         if 'ack' in packet:
-            print packet['ack']
-            print packet['id']
-            list = []
-            for i in range(0,512):
-                list.append({'id': i, 'rate': 0})
-        return [None,list]
+            l = []
+            for i in range(512):
+                l.append({'id': i, 'rate': 0})
+        return [None,l]
 
     @classmethod
     def update_trigger(self):
         for s in CMOSRatesNamespace._registry.values():
           data = {'update': []}
-          for channel in range(0,512):
+          for channel in range(512):
               update = snostream.data_store.get_latest('cmos_rates_%i' % channel,s.last_update)
               if update is not None:
                   data['update'].append({'id':channel,'rate':int(round(update[1],0))})

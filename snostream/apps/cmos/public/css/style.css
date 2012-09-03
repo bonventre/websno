@@ -15,7 +15,15 @@
   float: left;
   width: 400px;
   height: 100px;
+  table-layout: fixed;
 }
+
+.screamersbiglist-view {
+  float: left;
+  width: 1200px;
+  height: 600px;
+}
+
 
 .cmosrates-view {
 }

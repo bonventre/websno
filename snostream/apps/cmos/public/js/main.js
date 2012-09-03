@@ -1,21 +1,53 @@
+Backbone.View.prototype.close = function(){
+  if (this.onclose){
+    this.onclose();
+  }
+  this.remove();
+  this.unbind();
+}
+
 var AppRouter = Backbone.Router.extend({
   routes: {
-    '': 'index'
+    '': 'index',
+    'crate/:id': 'detail'
+  },
+
+  initialize: function(options){
+    this.appView = options.appView;
   },
 
   index: function() {
-    sockets['screamers'] = io.connect('/screamers');
-    this.crateScreamersCollection = new CrateScreamersCollection();
-    this.crateScreamersListView = new CrateScreamersListView({model: this.crateScreamersCollection});
-    this.crateScreamersCollection.fetch();
-    $('#content').html(this.crateScreamersListView.render().el);
+    var screamersView = new CrateScreamersBigListView();
+    this.appView.showView(screamersView);
+  },
+
+  detail: function(id){
+    var detailView = new DetailView({id: id}); 
+    this.appView.showView(detailView);
   }
 });
 
 var sockets = {}
-var cratefocus = -1;
-var channelfocus = -1;
 var ev = _.extend({},Backbone.Events);
+
+function AppView() {
+  this.showView = function(view) {
+    if (this.currentView){
+      this.currentView.close();
+    }
+    this.currentView = view;
+    $('#content').html(this.currentView.render().el);
+  }
+}
+
+$(document).ready(function() {
+  sockets['screamers'] = io.connect('/screamers');
+  appview = new AppView();
+  app = new AppRouter({appView: appview});
+  Backbone.history.start();
+});
+
+/*
 
 ev.on('screamers:click',function(id){
   if (cratefocus > -1){
@@ -60,8 +92,6 @@ ev.on('cmosrates:click',function(id){
     channelfocus = -1;
   }
 });
+*/
 
-$(document).ready(function() {
-  app = new AppRouter();
-  Backbone.history.start();
-});
+

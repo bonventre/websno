@@ -3,7 +3,7 @@ var CrateScreamers = Backbone.Model.extend({
 
   initialize: function() {
     _.bindAll(this,'update');
-    this.socket = sockets['screamers'];
+    this.socket = this.collection.socket;
     this.ioBind('update',this.update,this);
   },
 
@@ -16,8 +16,8 @@ var CrateScreamersCollection = Backbone.Collection.extend({
   model: CrateScreamers,
   url: 'screamers',
 
-  initialize: function(){
-    this.socket = sockets['screamers'];
+  initialize: function(models,options){
+    this.socket = options.socket;
   }
 });
 
@@ -34,6 +34,7 @@ var CmosRates = Backbone.Model.extend({
     this.set(data);
   }
 });
+/*
 
 var CmosRatesCollection = Backbone.Collection.extend({
   model: CmosRates,
@@ -64,3 +65,4 @@ var CmosRateTimes = Backbone.Model.extend({
     this.trigger("change");
   }
 });
+*/

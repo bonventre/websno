@@ -14,10 +14,10 @@ while True:
         'channels': []
     }
     
-    for i in range(512):
+    for i in range(9728):
         d['channels'].append({
             'id': i,
-            'rate': max(0, random.normalvariate(1000, 5000))
+            'rate': max(0, random.normalvariate(500, 200))
         })
 
     socket.send_json(d)
@@ -29,5 +29,5 @@ while True:
         break
 
     print 'send'
-    time.sleep(2)
+    time.sleep(1)
 

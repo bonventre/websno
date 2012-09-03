@@ -1,8 +1,66 @@
+var CrateScreamersBigView = Backbone.View.extend({
+  tagName: 'td',
+  className: 'screamers-view',
+  template: _.template($('#screamersbig-view').html()),
+
+  events: {
+    "click": function(){this.focuscrate;}
+  },
+
+  initialize: function() {
+    _.bindAll(this,'render','focuscrate');
+    this.model.on('change',this.render);
+  },
+
+  render: function() {
+    $(this.el).html(this.template(this.model.toJSON()));
+    return this;
+  },
+
+  focuscrate: function() {
+  }
+});
+
+var CrateScreamersBigListView = Backbone.View.extend({
+  tagName: 'table',
+  className: 'screamersbiglist-view',
+  template: _.template($('#screamerslist-view').html()),
+
+  initialize: function() {
+    this.socket = io.connect('/screamers');
+    this.model = new CrateScreamersCollection(null,{socket: this.socket});
+    _.bindAll(this,'render');
+    this.model.on('reset',this.render);
+    this.model.fetch();
+  },
+
+  render: function() {
+    $(this.el).html(this.template());
+    var counter = 0;
+    _.each(this.model.models, function(crate) {
+      var temp = new CrateScreamersBigView({model: crate});
+      if (counter < 10){
+        $(this.el).children(":first").append(temp.render().el);
+      }else{
+        $(this.el).children(":last").append(temp.render().el);
+      }
+      counter++;
+    }, this);
+    return this;
+  },
+
+  onClose: function() {
+    this.model.ioUnbindAll(this.model.socket);
+    this.model.socket.disconnect();
+  }
+});
+
+
+/*
+
 var CrateScreamersView = Backbone.View.extend({
   tagName: 'td',
-
   className: 'screamers-view',
-
   template: _.template($('#screamers-view').html()),
 
   events: {
@@ -22,9 +80,7 @@ var CrateScreamersView = Backbone.View.extend({
 
 var CrateScreamersListView = Backbone.View.extend({
   tagName: 'table',
-
   className: 'screamerslist-view',
-
   template: _.template($('#screamerslist-view').html()),
 
   initialize: function() {
@@ -128,3 +184,33 @@ var CmosRateTimesView = Backbone.View.extend({
     this.model.socket.disconnect();
   }
 });
+
+var CmosRateDetailView = Backbone.View.extend({
+  initialize: function(options) {
+    _.bindAll(this,'render');
+    this.screamers = new CrateScreamersCollection();
+    this.screamersView = new CrateScreamersListView({model: this.screamers});
+    this.screamers.fetch();
+    this.crate = new CmosRatesCollection({id: options.id});
+    this.crateView = new CmosRatesListView({model: this.crate});
+    this.crate.fetch();
+    this.channel = new CmosRateTimes({id: (options.id*512)};
+    this.channelView = new CmosRateTimesView({model: this.channel}); 
+    this.channel.fetch();
+  },
+
+  render: function() {
+    $(this.el).append(this.screamersView.render().el);
+    $(this.el).append(this.crateView.render().el);
+    $(this.el).append(this.channelView.render().el);
+    return this;
+  },
+
+  onClose: function() {
+    this.channelView.onClose();
+    this.crateView.onClose();
+    this.screamersView.onClose();
+  }
+});
+
+*/
