@@ -27,9 +27,15 @@ class ScreamersNamespace(BaseNamespace):
               l.append({'id': i, 'screamers': 0, 'avg': 0, 'avgno': 0})
         return [None,l]
 
+    def recv_disconnect(self):
+        print 'DISCONNECT', id(self)
+        del ScreamersNamespace._registry[id(self)]
+        self.disconnect(silent=True)
+
     @classmethod
     def update_trigger(self):
         for s in ScreamersNamespace._registry.values():
+            print 'updating screamers'
             l = []
             for crate in range(19):
                 screamers = 0
@@ -50,7 +56,9 @@ class ScreamersNamespace(BaseNamespace):
                     s.avg[crate] = avg
                     s.avg_no_screamers[crate] = avgno
                     address = 'screamers/%i:update' % crate
-                    s.emit(address,{'id':channel,'screamers':screamers, 'avg':avg, 'avgno':avgno})
+                    s.emit(address,{'id':crate,'screamers':screamers, 'avg':avg, 'avgno':avgno})
+                else:
+                    print 'all the same'
 
 
 class CMOSRatesNamespace(BaseNamespace):
@@ -59,6 +67,12 @@ class CMOSRatesNamespace(BaseNamespace):
     def initialize(self, subscriptions=[]):
         print 'connection', id(self)
         CMOSRatesNamespace._registry[id(self)] = self
+        self.last_update = time.time()
+        self.crate = 0
+
+    def on_setcrate(self, data):
+        print 'crate set to ',int(data['crate'])
+        self.crate = int(data['crate'])
         self.last_update = time.time()
 
     def on_cmosratesread(self, packet):
@@ -69,15 +83,22 @@ class CMOSRatesNamespace(BaseNamespace):
                 l.append({'id': i, 'rate': 0})
         return [None,l]
 
+    def recv_disconnect(self):
+        print 'DISCONNECT', id(self)
+        del CMOSRatesNamespace._registry[id(self)]
+        self.disconnect(silent=True)
+
     @classmethod
     def update_trigger(self):
         for s in CMOSRatesNamespace._registry.values():
+          print 'updating crate ',s.crate
           data = {'update': []}
           for channel in range(512):
-              update = snostream.data_store.get_latest('cmos_rates_%i' % channel,s.last_update)
+              update = snostream.data_store.get_latest('cmos_rates_%i' % (s.crate*512+channel),s.last_update)
               if update is not None:
                   data['update'].append({'id':channel,'rate':int(round(update[1],0))})
-          s.emit('cmosrates:update',data);
+          if len(data['update']) > 0:
+              s.emit('cmosrates:update',data);
           s.last_update = time.time()
 
 
@@ -91,7 +112,7 @@ class ChannelRatesNamespace(BaseNamespace):
         self.channel = None
 
     def on_channelratesread(self, data):
-        print 'initializing channelrates'
+        print 'initializing channel ',data['id']
         self.channel = data['id']
         interval = (time.time()-50, time.time())
         updates = snostream.data_store.get('cmos_rates_%i' % data['id'], interval)
@@ -109,9 +130,9 @@ class ChannelRatesNamespace(BaseNamespace):
     @classmethod
     def update_trigger(self):
         for s in ChannelRatesNamespace._registry.values():
-          print 'updating one'
           if s.channel is None:
             continue
+          print 'updating channel ', s.channel
           update = snostream.data_store.get_latest('cmos_rates_%i' % s.channel,s.last_update)
           print update
           if update is not None:

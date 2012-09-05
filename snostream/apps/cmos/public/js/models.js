@@ -24,9 +24,9 @@ var CrateScreamersCollection = Backbone.Collection.extend({
 var CmosRates = Backbone.Model.extend({
   urlRoot: 'cmosrates',
 
-  initialize: function() {
+  initialize: function(options) {
     _.bindAll(this,'update');
-    this.socket = sockets['cmosrates'];
+    this.socket = this.collection.socket;
     this.ioBind('update',this.update,this);
   },
 
@@ -34,35 +34,34 @@ var CmosRates = Backbone.Model.extend({
     this.set(data);
   }
 });
-/*
 
 var CmosRatesCollection = Backbone.Collection.extend({
   model: CmosRates,
   url: 'cmosrates',
 
-  initialize: function(){
-    this.socket = sockets['cmosrates'];
+  initialize: function(models, options){
+    this.socket = options.socket;
     this.ioBindChained('update',this);
   }
 });
 
+
 var CmosRateTimes = Backbone.Model.extend({
   urlRoot: 'channelrates',
   
-  initialize: function() {
+  initialize: function(options) {
     this.data = [];
     _.bindAll(this,'update');
-    this.socket = sockets['channelrates'];
-    this.ioBind('update',this.update,this);
+    this.socket = options.socket;
     this.on('reset',this.update);
   },
 
   update: function(data) {
-    if (this.data.length > 0){
+    if (this.data.length > 10){
       this.data = this.data.slice(1);
     }
     this.data.push.apply(this.data,data);
     this.trigger("change");
   }
 });
-*/
+

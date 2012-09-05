@@ -4,7 +4,7 @@ var CrateScreamersBigView = Backbone.View.extend({
   template: _.template($('#screamersbig-view').html()),
 
   events: {
-    "click": function(){this.focuscrate;}
+    "click": function(){this.focuscrate();}
   },
 
   initialize: function() {
@@ -18,6 +18,8 @@ var CrateScreamersBigView = Backbone.View.extend({
   },
 
   focuscrate: function() {
+    var address = 'crate/' + this.model.id;
+    app.navigate(address,true);
   }
 });
 
@@ -49,14 +51,11 @@ var CrateScreamersBigListView = Backbone.View.extend({
     return this;
   },
 
-  onClose: function() {
+  onclose: function() {
     this.model.ioUnbindAll(this.model.socket);
     this.model.socket.disconnect();
   }
 });
-
-
-/*
 
 var CrateScreamersView = Backbone.View.extend({
   tagName: 'td',
@@ -64,17 +63,28 @@ var CrateScreamersView = Backbone.View.extend({
   template: _.template($('#screamers-view').html()),
 
   events: {
-    "click": function(){ev.trigger("screamers:click",this.model.id);}
+    "click": function(){this.focuscrate();}
   },
 
   initialize: function() {
-    _.bindAll(this,'render');
+    _.bindAll(this,'render','focuscrate','onclose');
     this.model.on('change',this.render);
   },
 
   render: function() {
     $(this.el).html(this.template(this.model.toJSON()));
     return this;
+  },
+
+  focuscrate: function() {
+    var address = 'crate/' + this.model.id;
+    app.navigate(address,false);
+    ev.trigger("screamers:click",this.model.id);
+  },
+
+  onclose: function() {
+    this.model.ioUnbindAll(this.model.socket);
+    this.model.socket.disconnect();
   }
 });
 
@@ -83,9 +93,16 @@ var CrateScreamersListView = Backbone.View.extend({
   className: 'screamerslist-view',
   template: _.template($('#screamerslist-view').html()),
 
+  events: {
+    "click #zoomout": function(){this.focusall();}
+  },
+
   initialize: function() {
-    _.bindAll(this,'render');
+    this.socket = io.connect('/screamers');
+    this.model = new CrateScreamersCollection(null,{socket: this.socket});
+    _.bindAll(this,'render','focusall');
     this.model.on('reset',this.render);
+    this.model.fetch();
   },
 
   render: function() {
@@ -100,15 +117,25 @@ var CrateScreamersListView = Backbone.View.extend({
       }
       counter++;
     }, this);
+    if (counter > 0){
+      $(this.el).children(":last").append("<div id='zoomout'>All</div>");
+    }
     return this;
+  },
+
+  focusall: function() {
+    app.navigate("",true);
+  },
+
+  onclose: function() {
+    this.model.ioUnbindAll(this.model.socket);
+    this.model.socket.disconnect();
   }
 });
 
 var CmosRatesView = Backbone.View.extend({
   tagName: 'tr',
-
   className: 'cmosrates-view',
-
   template: _.template($('#cmosrates-view').html()),
 
   events: {
@@ -128,14 +155,16 @@ var CmosRatesView = Backbone.View.extend({
 
 var CmosRatesListView = Backbone.View.extend({
   tagName: 'table',
-
   className: 'cmosrateslist-view',
-
   template: _.template($('#cmosrateslist-view').html()),
 
-  initialize: function() {
-    _.bindAll(this,'render','populate','onclose');
+  initialize: function(options) {
+    _.bindAll(this,'render','populate','onclose','setcrate');
+    this.socket = io.connect('/cmosrates');
+    this.setcrate(options.id);
+    this.model = new CmosRatesCollection(null,{socket: this.socket});
     this.model.on('reset',this.populate);
+    this.model.fetch();
     this.render();
   },
 
@@ -155,6 +184,16 @@ var CmosRatesListView = Backbone.View.extend({
     return this;
   },
 
+  setcrate: function(id) {
+    this.id = id;
+    this.socket.emit("setcrate",{crate: this.id}); 
+    if (this.model){
+      _.each(this.model.models, function(channel) {
+        channel.set({'rate':0});
+      },this);
+    }
+  },
+
   onclose: function() {
     this.model.socket.disconnect();
   }
@@ -162,11 +201,12 @@ var CmosRatesListView = Backbone.View.extend({
 
 var CmosRateTimesView = Backbone.View.extend({
   tagName: 'div',
-
   className: 'timeplot',
 
-  initialize: function() {
-    _.bindAll(this,'render','plot','onclose');
+  initialize: function(options) {
+    _.bindAll(this,'render','plot','onclose','setchannel');
+    this.socket = io.connect('/channelrates');
+    this.setchannel(options.id);
     this.model.on('change',this.plot);
   },
 
@@ -179,38 +219,62 @@ var CmosRateTimesView = Backbone.View.extend({
     return this;
   },
 
+  setchannel: function(id) {
+    this.id = id;
+    if (this.model){
+      this.model.ioUnbindAll(this.model.socket);
+      this.model.id = id;
+      this.model.attributes.id = id;
+    }else{
+      this.model = new CmosRateTimes({id: this.id, socket: this.socket});
+    }
+    this.model.ioBind('update',this.model.update,this);
+    this.model.data = [];
+    this.model.trigger("change");
+    this.model.fetch();
+  },
+
+
   onclose: function() {
     this.model.ioUnbindAll(this.model.socket);
     this.model.socket.disconnect();
   }
 });
 
+
 var CmosRateDetailView = Backbone.View.extend({
   initialize: function(options) {
-    _.bindAll(this,'render');
-    this.screamers = new CrateScreamersCollection();
-    this.screamersView = new CrateScreamersListView({model: this.screamers});
-    this.screamers.fetch();
-    this.crate = new CmosRatesCollection({id: options.id});
-    this.crateView = new CmosRatesListView({model: this.crate});
-    this.crate.fetch();
-    this.channel = new CmosRateTimes({id: (options.id*512)};
-    this.channelView = new CmosRateTimesView({model: this.channel}); 
-    this.channel.fetch();
+    this.id = options.id;
+    _.bindAll(this,'render','onclose','switchcrate');
+    this.screamersView = new CrateScreamersListView();
+    this.crateView = new CmosRatesListView({id: this.id});
+    this.channelView = new CmosRateTimesView({id: (this.id*512)}); 
+    ev.on("cmosrates:click",this.channelView.setchannel);
+    ev.on("screamers:click",this.switchcrate);
   },
 
   render: function() {
+    $(this.el).append("<div id='crate-id'>Crate " + this.id + "</div><br>");
     $(this.el).append(this.screamersView.render().el);
     $(this.el).append(this.crateView.render().el);
     $(this.el).append(this.channelView.render().el);
     return this;
   },
 
-  onClose: function() {
-    this.channelView.onClose();
-    this.crateView.onClose();
-    this.screamersView.onClose();
+  switchcrate: function(id) {
+    this.id = id;
+    $(this.el).children("#crate-id").html("Crate " + this.id);
+    this.crateView.setcrate(id);
+    this.channelView.setchannel(id*512);
+  },
+
+  onclose: function() {
+    this.channelView.onclose();
+    this.crateView.onclose();
+    this.screamersView.onclose();
   }
 });
 
-*/
+
+
+

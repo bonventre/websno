@@ -57,6 +57,11 @@ Backbone.sync = function (method, model, options) {
 
   if ( !params.data && model ) {
     params.data = model.toJSON() || {};
+    // If you leave the socket in there it can cause a circular structure
+    // and socketio will complain when it tries to stringify it
+    if (params.data.socket){
+      delete params.data.socket;
+    }
   }
 
   // If your socket.io connection exists on a different var, change here:

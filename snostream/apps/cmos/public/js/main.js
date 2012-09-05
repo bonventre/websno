@@ -17,13 +17,13 @@ var AppRouter = Backbone.Router.extend({
   },
 
   index: function() {
-    var screamersView = new CrateScreamersBigListView();
-    this.appView.showView(screamersView);
+    this.screamerView = this.appView.showView(CrateScreamersBigListView);
   },
 
   detail: function(id){
-    var detailView = new DetailView({id: id}); 
-    this.appView.showView(detailView);
+    this.detailView = this.appView.showView(CmosRateDetailView,{id: id});
+    // annoying hack since flot won't plot on a div with height/width=0
+    this.detailView.channelView.model.trigger("change");
   }
 });
 
@@ -31,12 +31,13 @@ var sockets = {}
 var ev = _.extend({},Backbone.Events);
 
 function AppView() {
-  this.showView = function(view) {
+  this.showView = function(view,args) {
     if (this.currentView){
       this.currentView.close();
     }
-    this.currentView = view;
+    this.currentView = new view(args);
     $('#content').html(this.currentView.render().el);
+    return this.currentView;
   }
 }
 
